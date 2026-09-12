@@ -1,5 +1,5 @@
 main:
-  project_name: BankCampaignAI 
+  project_name: CustomerChurnAI 
   experiment_name: development
   steps: all
 etl:
@@ -10,7 +10,7 @@ modeling:
   test_size: 0.2
   val_size: 0.2
   random_seed: 42
-  stratify_by: "y" 
+  stratify_by: Churn
   random_forest:
     n_estimators: 100
     max_depth: 15
@@ -19,5 +19,5 @@ modeling:
     n_jobs: -1                # Here -1 means all available cores
     criterion: log_loss
     max_features: 0.33
-    oob_score: true           # DO not change the following
+    oob_score: true           
     

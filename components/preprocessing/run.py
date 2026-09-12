@@ -5,13 +5,18 @@ import argparse
 import logging
 import pandas as pd
 import wandb
-import numpy as np
 import os
-
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)-15s %(message)s")
 logger = logging.getLogger()
 
+cat_columns = [
+    'Gender',
+    'Education_Level',
+    'Marital_Status',
+    'Income_Category',
+    'Card_Category'
+]
 
 def go(args):
     """
@@ -29,12 +34,24 @@ def go(args):
     run.config.update(args)
 
     artifact_local_path = run.use_artifact(args.input_artifact).file()
-    df = pd.read_csv(artifact_local_path, sep=';')
+    df = pd.read_csv(artifact_local_path)
 
-    # replacing all types of 'basic' education with a single value 'basic'
-    df['education'].replace(
-        {'basic.4y': 'basic', 'basic.6y': 'basic', 'basic.9y': 'basic'}, inplace=True)
+    # Remove duplicates
+    df.drop_duplicates(inplace=True)
 
+    # Remove rows with missing values
+    df.dropna(inplace=True)
+
+    # Map the 'Attrition_Flag' column to a binary 'Churn' column
+    df['Churn'] = df['Attrition_Flag'].apply(lambda x: 1 if x == 'Attrited Customer' else 0)
+    df.drop(columns=["Attrition_Flag"], inplace=True)
+
+    # Create new features based on categorical columns and the 'Churn' column
+    for cat_col in cat_columns:
+        df[cat_col + '_' + 'Churn'] = df[cat_col].map(
+            df.groupby(cat_col)['Churn'].mean()
+        )
+  
     logger.info("Cleaned data has %s rows and %s columns", *df.shape)
 
     # Save cleaned data

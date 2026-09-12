@@ -15,7 +15,7 @@ def go(args):
     """
 
     # Initialize a new W&B run
-    run = wandb.init(project='BankCampaignAI', group='eda')
+    run = wandb.init(project='BankChurnAI', group='eda')
     run.config.update(args)
 
     # load the input artifact

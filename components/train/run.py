@@ -9,21 +9,20 @@ import matplotlib.pyplot as plt
 import mlflow
 import yaml
 import pandas as pd
-import numpy as np
 import wandb
 
-from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import ConfusionMatrixDisplay, accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
-from sklearn.pipeline import Pipeline, make_pipeline
-
+from sklearn.pipeline import Pipeline
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)-15s %(message)s")
 logger = logging.getLogger()
 
+cat_columns = ['Gender', 'Education_Level', 'Marital_Status',
+               'Income_Category', 'Card_Category']
 
 def go(args):
     """
@@ -49,32 +48,39 @@ def go(args):
     # Get the train and validation artifact
     trainval_local_path = run.use_artifact(args.trainval_artifact).file()
 
-    X = pd.read_csv(trainval_local_path)
-    y = X.pop("y")
+    # Load the dataset into a pandas DataFrame
+    df = pd.read_csv(trainval_local_path)
 
+    # Drop the original categorical columns from the DataFrame
+    df.drop(columns=cat_columns, inplace=True)
+    
+    # Split the dataset into features (X) and target (y)
+    X = df.drop(columns=["Churn"])
+    y = df["Churn"]
+
+    # Split the dataset into training and validation sets
     X_train, X_val, y_train, y_val = train_test_split(
         X, y, test_size=args.val_size, stratify=y, random_state=args.random_seed)
 
     logger.info("Preparing sklearn pipeline")
 
-    sk_pipe, processed_features = get_inference_pipeline(rf_config)
+    sk_pipe = get_inference_pipeline(rf_config)
 
     # Then fit it to the X_train, y_train data
     logger.info("Fitting")
 
-    # Fit the pipeline sk_pipe by calling the .fit method on X_train and
-    # y_train
+    # Fit the pipeline sk_pipe by calling the .fit method on X_train and y_train
     sk_pipe.fit(X_train, y_train)
 
-    # Compute r2 and MAE
+    # Compute the metrics on the validation set
     logger.info("Metrics Computation")
 
     y_pred = sk_pipe.predict(X_val)
 
     accuracy = accuracy_score(y_val, y_pred)
-    precision = precision_score(y_val, y_pred, pos_label='yes')
-    recall = recall_score(y_val, y_pred, pos_label='yes')
-    f1 = f1_score(y_val, y_pred, pos_label='yes')
+    precision = precision_score(y_val, y_pred, pos_label=1)
+    recall = recall_score(y_val, y_pred, pos_label=1)
+    f1 = f1_score(y_val, y_pred, pos_label=1)
 
     logger.info(f"Accuracy: {accuracy}")
     logger.info(f"Precision: {precision}")
@@ -130,14 +136,14 @@ def plot_confusion_matrix(y_val, y_pred):
         matplotlib.figure.Figure: Figure containing the confusion matrix.
     """
 
-    cm = confusion_matrix(y_val, y_pred, labels=["no", "yes"])
+    cm = confusion_matrix(y_val, y_pred, labels=[0, 1])
     fig, ax = plt.subplots(figsize=(6, 6))
 
     ConfusionMatrixDisplay(
         confusion_matrix=cm,
         display_labels=[
-            "No",
-            "Yes"]).plot(
+            0,
+            1]).plot(
         ax=ax)
     return fig
 
@@ -150,73 +156,20 @@ def get_inference_pipeline(rf_config):
         rf_config: Dictionary containing the Random Forest model configuration.
 
     Returns:
-        tuple: The sklearn pipeline and the list of processed feature names.
+        sklearn.pipeline.Pipeline: The sklearn pipeline.
     """
 
-    # Let's handle the categorical features first
-    # Ordinal categorical are categorical values for which the order is
-    # meaningful
-    ordinal_cat_cols = ["education"]
-    non_ordinal_cat_cols = [
-        "job",
-        "marital",
-        "default",
-        "housing",
-        "loan",
-        "contact",
-        "poutcome",
-        "month",
-        "day_of_week"]
-
-    ordinal_cat_preproc = OrdinalEncoder()
-    non_ordinal_cat_preproc = Pipeline(
-        steps=[
-            ('imputer', SimpleImputer(strategy="most_frequent")),
-            ('encoder', OneHotEncoder())
-        ]
-    )
-
-    # Let's impute the numerical columns to make sure we can handle missing
-    # values
-    median_imputed_cols = [
-        "age",
-        "duration",
-        "campaign",
-        "pdays",
-        "emp.var.rate",
-        "cons.price.idx",
-        "cons.conf.idx",
-        "euribor3m",
-        "nr.employed"]
-
-    zero_imputed_cols = ["previous"]
-
+    # Create a median imputer for missing values
     median_imputer = SimpleImputer(strategy="median")
-    zero_imputer = SimpleImputer(strategy="constant", fill_value=0)
 
-    # putting everything together
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ("ordinal_cat", ordinal_cat_preproc, ordinal_cat_cols),
-            ("non_ordinal_cat", non_ordinal_cat_preproc, non_ordinal_cat_cols),
-            ("impute_zero", zero_imputer, zero_imputed_cols),
-            ("impute_median", median_imputer, median_imputed_cols)],
-    )
+    # Create the sklearn pipeline with the preprocessor and the Random Forest model
+    sk_pipe = Pipeline([
+        ('imputer', median_imputer),
+        ('scaler', StandardScaler()),
+        ('model', RandomForestClassifier(**rf_config))
+    ])
 
-    processed_features = ordinal_cat_cols + non_ordinal_cat_cols + \
-        zero_imputed_cols + median_imputed_cols
-
-    # Create random forest
-    random_forest = RandomForestClassifier(**rf_config)
-
-    sk_pipe = Pipeline(
-        steps=[
-            ("preprocessor", preprocessor),
-            ("random_forest", random_forest)
-        ]
-    )
-
-    return sk_pipe, processed_features
+    return sk_pipe
 
 
 if __name__ == "__main__":
@@ -240,14 +193,6 @@ if __name__ == "__main__":
         type=int,
         help="Seed for random number generator",
         default=42,
-        required=False,
-    )
-
-    parser.add_argument(
-        "--stratify_by",
-        type=str,
-        help="Column to use for stratification",
-        default="none",
         required=False,
     )
 

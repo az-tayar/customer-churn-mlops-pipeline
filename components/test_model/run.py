@@ -8,10 +8,11 @@ import mlflow
 import pandas as pd
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
-
 logging.basicConfig(level=logging.INFO, format="%(asctime)-15s %(message)s")
 logger = logging.getLogger()
 
+cat_columns = ['Gender', 'Education_Level', 'Marital_Status',
+               'Income_Category', 'Card_Category']
 
 def go(args):
     """
@@ -33,8 +34,13 @@ def go(args):
     test_dataset_path = run.use_artifact(args.test_dataset).file()
 
     # Read test dataset
-    X_test = pd.read_csv(test_dataset_path)
-    y_test = X_test.pop("y")
+    df = pd.read_csv(test_dataset_path)
+
+    # Drop the original categorical columns from the DataFrame
+    df.drop(columns=cat_columns, inplace=True)
+
+    X_test = df.drop(columns=["Churn"])
+    y_test = df["Churn"]
 
     logger.info("Loading model and performing inference on test set")
     sk_pipe = mlflow.sklearn.load_model(model_local_path)
@@ -42,9 +48,9 @@ def go(args):
 
     logger.info("Calculating metrics")
     accuracy = accuracy_score(y_test, y_pred)
-    precision = precision_score(y_test, y_pred, pos_label='yes')
-    recall = recall_score(y_test, y_pred, pos_label='yes')
-    f1 = f1_score(y_test, y_pred, pos_label='yes')
+    precision = precision_score(y_test, y_pred, pos_label=1)
+    recall = recall_score(y_test, y_pred, pos_label=1)
+    f1 = f1_score(y_test, y_pred, pos_label=1)
 
     logger.info(f"Accuracy: {accuracy}")
     logger.info(f"Precision: {precision}")

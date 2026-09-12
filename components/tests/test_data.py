@@ -11,17 +11,19 @@ def test_column_names(data):
         data: Input dataset to validate.
     """
 
-    expected_colums = [
-        'age', 'job', 'marital', 'education', 'default', 'housing', 'loan',
-        'contact', 'month', 'day_of_week', 'duration', 'campaign', 'pdays',
-        'previous', 'poutcome', 'emp.var.rate', 'cons.price.idx',
-        'cons.conf.idx', 'euribor3m', 'nr.employed', 'y',
-    ]
+    expected_colums = ['Unnamed: 0', 'CLIENTNUM', 'Customer_Age', 'Gender', 'Dependent_count',
+           'Education_Level', 'Marital_Status', 'Income_Category', 'Card_Category',
+           'Months_on_book', 'Total_Relationship_Count', 'Months_Inactive_12_mon',
+           'Contacts_Count_12_mon', 'Credit_Limit', 'Total_Revolving_Bal',
+           'Avg_Open_To_Buy', 'Total_Amt_Chng_Q4_Q1', 'Total_Trans_Amt',
+           'Total_Trans_Ct', 'Total_Ct_Chng_Q4_Q1', 'Avg_Utilization_Ratio',
+           'Churn', 'Gender_Churn', 'Education_Level_Churn',
+           'Marital_Status_Churn', 'Income_Category_Churn', 'Card_Category_Churn'
+           ]
 
     these_columns = data.columns.to_numpy()
 
-    # This also enforces the same order using numpy comparison for better
-    # performance
+    # This also enforces the same order using numpy comparison for better performance
     assert np.array_equal(expected_colums, these_columns)
 
 
@@ -34,7 +36,7 @@ def test_row_count(data):
     """
     n_rows = data.shape[0]
 
-    assert 30000 < n_rows < 50000
+    assert 8000 < n_rows < 15000
 
 
 def test_similar_target_distrib(
@@ -50,7 +52,7 @@ def test_similar_target_distrib(
         ref_data: Reference dataset used for distribution comparison.
         kl_threshold: Maximum allowed KL divergence between the distributions.
     """
-    dist1 = data['y'].value_counts().sort_index()
-    dist2 = ref_data['y'].value_counts().sort_index()
+    dist1 = data['Churn'].value_counts().sort_index()
+    dist2 = ref_data['Churn'].value_counts().sort_index()
 
     assert scipy.stats.entropy(dist1, dist2, base=2) < kl_threshold
