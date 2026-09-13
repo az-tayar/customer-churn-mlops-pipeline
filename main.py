@@ -10,7 +10,8 @@ steps = [
     "test_data",
     "data_split",
     "train",
-    "test_model"]
+    "test_model",
+    "deploy_model"]
 
 
 # This automatically reads in the configuration
@@ -51,7 +52,7 @@ def go(config):
             # Download file and load in W&B
             _ = mlflow.run(
                 "components/data_ingestion",
-                "main",
+                entry_point="main",
                 env_manager="conda",
                 parameters={
                     "sample": config["etl"]["sample"],
@@ -70,7 +71,7 @@ def go(config):
             # Run the preprocessing step using MLflow
             _ = mlflow.run(
                 "components/preprocessing",
-                "main",
+                entry_point="main",
                 env_manager="conda",
                 parameters={
                     "input_artifact": "dataset.csv:latest",
@@ -89,7 +90,7 @@ def go(config):
             # Run the EDA step using MLflow
             _ = mlflow.run(
                 "components/eda",
-                "main",
+                entry_point="main",
                 env_manager="conda",
                 parameters={
                     "input_artifact": "clean_dataset.csv:latest",
@@ -108,7 +109,7 @@ def go(config):
             # Run the data testing step using MLflow
             _ = mlflow.run(
                 "components/tests",
-                "main",
+                entry_point="main",
                 env_manager="conda",
                 parameters={
                     "csv": "clean_dataset.csv:latest",
@@ -126,7 +127,7 @@ def go(config):
             # Run the data splitting step using MLflow
             _ = mlflow.run(
                 "components/data_split",
-                "main",
+                entry_point="main",
                 env_manager="conda",
                 parameters={
                     "input": "clean_dataset.csv:latest",
@@ -145,7 +146,7 @@ def go(config):
             # Run the model training step using MLflow
             _ = mlflow.run(
                 "components/train",
-                "main",
+                entry_point="main",
                 env_manager="conda",
                 parameters={
                     "trainval_artifact": "trainval_data.csv:latest",
@@ -164,7 +165,7 @@ def go(config):
             # Run the model testing step using MLflow
             _ = mlflow.run(
                 "components/test_model",
-                "main",
+                entry_point="main",
                 env_manager="conda",
                 parameters={
                     "mlflow_model": "random_forest_export:latest",
@@ -176,6 +177,21 @@ def go(config):
         except Exception as e:
             logging.error(f"Error occurred while running model testing: {e}")
 
+    if "deploy_model" in active_steps:
+        try:
+            # Run the model deployment step using MLflow
+            _ = mlflow.run(
+                "components/deploy_model",
+                entry_point="main",
+                env_manager="conda",
+                parameters={
+                    "export_model": "random_forest_export:prod"
+                },
+            )
+            logging.info("Model deployment step completed successfully.")
+
+        except Exception as e:
+            logging.error(f"Error occurred while running model deployment: {e}")
 
     logging.info("Pipeline completed.")
 

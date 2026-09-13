@@ -1,0 +1,10 @@
+name: deploy_model
+conda_env: conda.yml
+
+entry_points:
+  main:
+    parameters:
+      export_model:
+        description: Exported model artifact for deployment
+        type: str
+    command: python run.py --export_model {export_model}

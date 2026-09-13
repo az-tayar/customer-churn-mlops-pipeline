@@ -11,7 +11,7 @@ def test_column_names(data):
         data: Input dataset to validate.
     """
 
-    expected_colums = ['Unnamed: 0', 'CLIENTNUM', 'Customer_Age', 'Gender', 'Dependent_count',
+    expected_colums = ['Customer_Age', 'Gender', 'Dependent_count',
            'Education_Level', 'Marital_Status', 'Income_Category', 'Card_Category',
            'Months_on_book', 'Total_Relationship_Count', 'Months_Inactive_12_mon',
            'Contacts_Count_12_mon', 'Credit_Limit', 'Total_Revolving_Bal',

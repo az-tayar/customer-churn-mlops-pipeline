@@ -44,7 +44,9 @@ def go(args):
 
     # Map the 'Attrition_Flag' column to a binary 'Churn' column
     df['Churn'] = df['Attrition_Flag'].apply(lambda x: 1 if x == 'Attrited Customer' else 0)
-    df.drop(columns=["Attrition_Flag"], inplace=True)
+
+    # Drop unnecessary columns from the DataFrame
+    df.drop(columns=["Attrition_Flag", "CLIENTNUM", "Unnamed: 0"], inplace=True)
 
     # Create new features based on categorical columns and the 'Churn' column
     for cat_col in cat_columns:
