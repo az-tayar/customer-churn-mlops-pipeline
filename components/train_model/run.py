@@ -10,6 +10,7 @@ import mlflow
 import yaml
 import pandas as pd
 import wandb
+import json
 
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
@@ -119,6 +120,18 @@ def go(args):
     run.summary['precision'] = precision
     run.summary['recall'] = recall
     run.summary['f1'] = f1
+
+    metrics = {
+        "accuracy": accuracy,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1
+    }
+
+    # save the metrics locally
+    os.makedirs('../../metrics', exist_ok=True)
+    with open('../../metrics/val_data_metrics', 'w') as f:
+        json.dump(metrics, f, indent=4)
 
     # Upload to W&B the confusion matrix figure
     run.log({"confusion_matrix": wandb.Image(fig_conf_mtrx)})

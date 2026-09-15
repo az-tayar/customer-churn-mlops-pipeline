@@ -6,6 +6,8 @@ import logging
 import wandb
 import mlflow
 import pandas as pd
+import os
+import json
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)-15s %(message)s")
@@ -62,6 +64,18 @@ def go(args):
     run.summary['precision'] = precision
     run.summary['recall'] = recall
     run.summary['f1'] = f1
+
+    metrics = {
+        "accuracy": accuracy,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1
+    }
+
+    # save the metrics locally
+    os.makedirs('../../metrics', exist_ok=True)
+    with open('../../metrics/test_data_metrics', 'w') as f:
+        json.dump(metrics, f, indent=4)
 
 
 if __name__ == "__main__":
