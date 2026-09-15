@@ -130,7 +130,7 @@ def go(args):
 
     # save the metrics locally
     os.makedirs('../../metrics', exist_ok=True)
-    with open('../../metrics/val_data_metrics', 'w') as f:
+    with open('../../metrics/val_data_metrics.json', 'w') as f:
         json.dump(metrics, f, indent=4)
 
     # Upload to W&B the confusion matrix figure

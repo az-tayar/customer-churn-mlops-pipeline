@@ -10,7 +10,8 @@ steps = [
     "test_data",
     "data_split",
     "train_model",
-    "test_model",
+    "eval_model",
+    "test_model"
     ]
 
 
@@ -71,6 +72,7 @@ def go(config):
 
         except Exception as e:
             logging.error(f"Error occurred while running data_ingestion: {e}")
+            raise
 
     if "preprocessing" in active_steps:
         try:
@@ -90,6 +92,7 @@ def go(config):
 
         except Exception as e:
             logging.error(f"Error occurred while running preprocessing: {e}")
+            raise
 
     if "eda" in active_steps:
         try:
@@ -127,6 +130,7 @@ def go(config):
 
         except Exception as e:
             logging.error(f"Error occurred while running data testing: {e}")
+            raise
 
     if "data_split" in active_steps:
         try:
@@ -146,6 +150,7 @@ def go(config):
 
         except Exception as e:
             logging.error(f"Error occurred while running data splitting: {e}")
+            raise
 
     if "train_model" in active_steps:
         try:
@@ -165,6 +170,25 @@ def go(config):
 
         except Exception as e:
             logging.error(f"Error occurred while running model training: {e}")
+            raise
+
+    if "eval_model" in active_steps:
+        try:
+            # Run the model evaluating step using MLflow
+            _ = mlflow.run(
+                "components/eval_model",
+                entry_point="main",
+                env_manager="conda",
+                parameters={
+                    "mlflow_model": "random_forest_export:prod",
+                    "test_dataset": "test_data.csv:latest"
+                },
+            )
+            logging.info("Model evaluating step completed successfully.")
+
+        except Exception as e:
+            logging.error(f"Error occurred while running model testing: {e}")
+            raise
 
     if "test_model" in active_steps:
         try:
@@ -173,15 +197,12 @@ def go(config):
                 "components/test_model",
                 entry_point="main",
                 env_manager="conda",
-                parameters={
-                    "mlflow_model": "random_forest_export:prod",
-                    "test_dataset": "test_data.csv:latest"
-                },
             )
             logging.info("Model testing step completed successfully.")
 
         except Exception as e:
-            logging.error(f"Error occurred while running model testing: {e}")
+            logging.error(f"Error occurred while running model testing: {e}")    
+            raise
 
     if "deploy_model" in active_steps:
         try:
@@ -200,6 +221,7 @@ def go(config):
 
         except Exception as e:
             logging.error(f"Error occurred while running model deployment: {e}")
+            raise
 
     if "test_api" in active_steps:
         try:
@@ -213,6 +235,7 @@ def go(config):
 
         except Exception as e:
             logging.error(f"Error occurred while testing API running server: {e}")
+            raise
 
 
 if __name__ == "__main__":

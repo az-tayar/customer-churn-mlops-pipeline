@@ -74,7 +74,7 @@ def go(args):
 
     # save the metrics locally
     os.makedirs('../../metrics', exist_ok=True)
-    with open('../../metrics/test_data_metrics', 'w') as f:
+    with open('../../metrics/test_data_metrics.json', 'w') as f:
         json.dump(metrics, f, indent=4)
 
 
