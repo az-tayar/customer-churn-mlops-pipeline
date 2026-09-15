@@ -9,9 +9,9 @@ steps = [
     "eda",
     "test_data",
     "data_split",
-    "train",
+    "train_model",
     "test_model",
-    "deploy_model"]
+    ]
 
 
 # This automatically reads in the configuration
@@ -45,7 +45,13 @@ def go(config):
 
     # Steps to execute
     steps_par = config['main']['steps']
-    active_steps = steps_par.split(",") if steps_par != "all" else steps
+    if steps_par == "all":
+        active_steps = steps
+    elif isinstance(steps_par, str):
+        active_steps = steps_par.split(",")
+    else:
+        active_steps = list(steps_par)
+
 
     if "data_ingestion" in active_steps:
         try:
@@ -108,7 +114,7 @@ def go(config):
         try:
             # Run the data testing step using MLflow
             _ = mlflow.run(
-                "components/tests",
+                "components/test_data",
                 entry_point="main",
                 env_manager="conda",
                 parameters={
@@ -141,11 +147,11 @@ def go(config):
         except Exception as e:
             logging.error(f"Error occurred while running data splitting: {e}")
 
-    if "train" in active_steps:
+    if "train_model" in active_steps:
         try:
             # Run the model training step using MLflow
             _ = mlflow.run(
-                "components/train",
+                "components/train_model",
                 entry_point="main",
                 env_manager="conda",
                 parameters={
@@ -185,7 +191,9 @@ def go(config):
                 entry_point="main",
                 env_manager="conda",
                 parameters={
-                    "export_model": "random_forest_export:prod"
+                    "ip_address": config["main"]["ip_address"],
+                    "port": config["main"]["port"],
+                    "export_model": "random_forest_export:prod",
                 },
             )
             logging.info("Model deployment step completed successfully.")
@@ -193,7 +201,18 @@ def go(config):
         except Exception as e:
             logging.error(f"Error occurred while running model deployment: {e}")
 
-    logging.info("Pipeline completed.")
+    if "test_api" in active_steps:
+        try:
+            # Run some tests for fastapi running server
+            _ = mlflow.run(
+                "components/test_api",
+                entry_point="main",
+                env_manager="conda",
+            )
+            logging.info("API testing step completed successfully.") 
+
+        except Exception as e:
+            logging.error(f"Error occurred while testing API running server: {e}")
 
 
 if __name__ == "__main__":

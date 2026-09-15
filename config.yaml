@@ -2,6 +2,8 @@ main:
   project_name: CustomerChurnAI 
   experiment_name: development
   steps: all
+  ip_address: 127.0.0.1
+  port: 8000
 etl:
   sample: "dataset.csv"
 data_check:

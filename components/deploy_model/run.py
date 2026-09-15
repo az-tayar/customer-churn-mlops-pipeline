@@ -104,13 +104,26 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Run the FastAPI server for the Customer Churn Predictor.")
 
+    parser.add_argument("--ip_address",
+                        type=str,
+                        help="the IP address for deploying the prod model",
+                        required=True,
+                        )
+
+    parser.add_argument("--port",
+                        type=int,
+                        help="The port number for listening to the FastAPI server",
+                        required=True,
+                        )
+
     parser.add_argument("--export_model",
                         type=str,
                         help="exported model Artifact for deployment",
                         required=True,
                         )
+    
     args = parser.parse_args()
 
     # Create the app
     app = create_app(args)
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host=args.ip_address, port=args.port)

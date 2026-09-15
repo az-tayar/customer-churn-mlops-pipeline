@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 import scipy.stats
 
-
 def test_column_names(data):
     """
     Verify that the dataset contains the expected columns in the correct order.

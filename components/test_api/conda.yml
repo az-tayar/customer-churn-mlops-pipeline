@@ -1,0 +1,11 @@
+name: test_api
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.13
+  - pandas=2.3.2
+  - pytest=8.4.2
+  - pip=24.3.1
+  - pip:
+      - mlflow==3.3.2
