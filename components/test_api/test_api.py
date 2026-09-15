@@ -9,9 +9,17 @@ customer examples from the training/validation dataset.
 The FastAPI server must be running before executing these tests.
 """
 
-import requests
 import pandas as pd
+from pathlib import Path
+from argparse import Namespace
+import mlflow
+import sys
 
+test_path = Path(__file__).resolve().parents[1] / "deploy_model"
+sys.path.append(str(test_path))
+
+from fastapi.testclient import TestClient
+from run import create_app
 
 # Categorical columns that are not required by the deployed model
 cat_columns = [
@@ -22,8 +30,10 @@ cat_columns = [
     "Card_Category"
 ]
 
-# URL of the running FastAPI server
-url_path = "http://127.0.0.1:8000"
+# initiating the client server
+args = Namespace(export_model="random_forest_export:prod")
+app = create_app(args)
+client = TestClient(app)
 
 
 def test_root():
@@ -33,8 +43,8 @@ def test_root():
     Sends a GET request to the root endpoint and verifies that the API
     returns HTTP status code 200 and the expected welcome message.
     """
-    response = requests.get(
-        f"{url_path}/",
+    response = client.get(
+        "/",
         timeout=10
     )
 
@@ -67,8 +77,8 @@ def test_predict_churn_0():
     # Remove target variable before sending features to the API
     input_data = input_data.drop("Churn")
 
-    response = requests.post(
-        f"{url_path}/predict",
+    response = client.post(
+        "/predict",
         json=input_data.to_dict(),
         timeout=10
     )
@@ -97,8 +107,8 @@ def test_predict_churn_1():
     # Remove target variable before sending features to the API
     input_data = input_data.drop("Churn")
 
-    response = requests.post(
-        f"{url_path}/predict",
+    response = client.post(
+        "/predict",
         json=input_data.to_dict(),
         timeout=10
     )

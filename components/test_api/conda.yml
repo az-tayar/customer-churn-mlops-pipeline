@@ -5,7 +5,11 @@ channels:
 dependencies:
   - python=3.13
   - pandas=2.3.2
+  - scikit-learn=1.7.2
   - pytest=8.4.2
   - pip=24.3.1
+  - fastapi=0.115.0
+  - httpx
   - pip:
       - mlflow==3.3.2
+      - wandb==0.21.3
