@@ -21,7 +21,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-
       # --------------------------------------------------
       # 2. Set up Miniconda
       # --------------------------------------------------
@@ -30,7 +29,6 @@ jobs:
         with:
           python-version: "3.13"
           auto-activate-base: true
-
 
       # --------------------------------------------------
       # 3. Install CI dependencies
@@ -43,7 +41,6 @@ jobs:
           pip install flake8
           pip install wandb==0.21.3
 
-
       # --------------------------------------------------
       # 4. Configure W&B
       # --------------------------------------------------
@@ -53,7 +50,6 @@ jobs:
           WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
         run: |
           wandb login "$WANDB_API_KEY"
-
 
       # --------------------------------------------------
       # 5. Flake8
@@ -67,7 +63,6 @@ jobs:
             --show-source \
             --statistics
 
-
       # --------------------------------------------------
       # 6. Data tests
       # --------------------------------------------------
@@ -78,7 +73,6 @@ jobs:
         run: |
           mlflow run . -P steps="'test_data'"
 
-
       # --------------------------------------------------
       # 7. Model performance tests
       # --------------------------------------------------
@@ -88,7 +82,6 @@ jobs:
           WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
         run: |
           mlflow run . -P steps="'test_model'"
-
 
       # --------------------------------------------------
       # 8. FastAPI tests
