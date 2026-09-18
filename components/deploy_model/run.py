@@ -58,7 +58,7 @@ def create_app(args):
         fastapi.FastAPI: Configured FastAPI application.
     """
     # Initialize a W&B run for deployment
-    run = wandb.init(job_type="deploy")
+    run = wandb.init(job_type="deploy", entity='az-tayar-university-of-ottawa', project='CustomerChurnAI')
     run.config.update(args)
 
     # Download the exported model artifact from W&B
