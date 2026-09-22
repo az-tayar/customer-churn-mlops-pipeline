@@ -2,6 +2,7 @@ import mlflow
 import os
 import hydra
 import logging
+import time
 
 steps = [
     "data_ingestion",
@@ -54,6 +55,7 @@ def go(config):
         active_steps = list(steps_par)
 
 
+    ingestion_start_time = time.time()
     if "data_ingestion" in active_steps:
         try:
             # Download file and load in W&B
@@ -68,12 +70,15 @@ def go(config):
                     "artifact_description": "Raw file as downloaded"
                 },
             )
-            logging.info("Data ingestion step completed successfully.")
+            ingestion_end_time = time.time()
+            ingestion_exc_time = ingestion_end_time - ingestion_start_time
+            logging.info(f"Data ingestion step completed successfully - execution time: {ingestion_exc_time:.2f} sec")
 
         except Exception as e:
             logging.error(f"Error occurred while running data_ingestion: {e}")
             raise
 
+    preprocessing_start_time = time.time()
     if "preprocessing" in active_steps:
         try:
             # Run the preprocessing step using MLflow
@@ -88,12 +93,15 @@ def go(config):
                     "output_description": "Data with outliers and null values removed",
                 },
             )
-            logging.info("Preprocessing step completed successfully.")
+            preprocessing_end_time = time.time()
+            preprocessing_exc_time = preprocessing_end_time - preprocessing_start_time
+            logging.info(f"Preprocessing step completed successfully - execution time: {preprocessing_exc_time:.2f} sec")
 
         except Exception as e:
             logging.error(f"Error occurred while running preprocessing: {e}")
             raise
 
+    eda_start_time = time.time()
     if "eda" in active_steps:
         try:
             # Run the EDA step using MLflow
@@ -108,11 +116,14 @@ def go(config):
                     "output_description": "Exploratory data analysis report"
                 },
             )
-            logging.info("EDA step completed successfully.")
+            eda_end_time = time.time()
+            eda_exc_time = eda_end_time - eda_start_time
+            logging.info(f"EDA step completed successfully - execution time: {eda_exc_time:.2f} sec")
 
         except Exception as e:
             logging.error(f"Error occurred while running eda: {e}")
 
+    test_data_start_time = time.time()
     if "test_data" in active_steps:
         try:
             # Run the data testing step using MLflow
@@ -126,12 +137,15 @@ def go(config):
                     "kl_threshold": config["data_check"]["kl_threshold"],
                 },
             )
-            logging.info("Data testing step completed successfully.")
+            test_data_end_time = time.time()
+            test_data_exc_time = test_data_end_time - test_data_start_time
+            logging.info(f"Data testing step completed successfully - execution time: {test_data_exc_time:.2f} sec")
 
         except Exception as e:
             logging.error(f"Error occurred while running data testing: {e}")
             raise
 
+    data_split_start_time = time.time()
     if "data_split" in active_steps:
         try:
             # Run the data splitting step using MLflow
@@ -146,12 +160,15 @@ def go(config):
                     "stratify_by": config["modeling"]["stratify_by"]
                 },
             )
-            logging.info("Data splitting step completed successfully.")
+            data_split_end_time = time.time()
+            data_split_exc_time = data_split_end_time - data_split_start_time
+            logging.info(f"Data splitting step completed successfully - execution time: {data_split_exc_time:.2f} sec")
 
         except Exception as e:
             logging.error(f"Error occurred while running data splitting: {e}")
             raise
 
+    train_start_time = time.time()
     if "train_model" in active_steps:
         try:
             # Run the model training step using MLflow
@@ -166,12 +183,15 @@ def go(config):
                     "output_artifact": 'random_forest_export'
                 },
             )
-            logging.info("Model training step completed successfully.")
+            train_end_time = time.time()
+            train_exc_time = train_end_time - train_start_time
+            logging.info(f"Model training step completed successfully - execution time: {train_exc_time:.2f} sec")
 
         except Exception as e:
             logging.error(f"Error occurred while running model training: {e}")
             raise
 
+    eval_model_start_time = time.time()
     if "eval_model" in active_steps:
         try:
             # Run the model evaluating step using MLflow
@@ -184,12 +204,15 @@ def go(config):
                     "test_dataset": "test_data.csv:latest"
                 },
             )
-            logging.info("Model evaluating step completed successfully.")
+            eval_model_end_time = time.time()
+            eval_model_exc_time = eval_model_end_time - eval_model_start_time
+            logging.info(f"Model evaluating step completed successfully - execution time: {eval_model_exc_time:.2f} sec")
 
         except Exception as e:
             logging.error(f"Error occurred while running model testing: {e}")
             raise
 
+    test_model_start_time = time.time()
     if "test_model" in active_steps:
         try:
             # Run the model testing step using MLflow
@@ -198,7 +221,9 @@ def go(config):
                 entry_point="main",
                 env_manager="conda",
             )
-            logging.info("Model testing step completed successfully.")
+            test_model_end_time = time.time()
+            test_model_exc_time = test_model_end_time - test_model_start_time
+            logging.info(f"Model testing step completed successfully - execution time: {test_model_exc_time:.2f} sec")
 
         except Exception as e:
             logging.error(f"Error occurred while running model testing: {e}")    
@@ -206,6 +231,8 @@ def go(config):
 
     if "deploy_model" in active_steps:
         try:
+            logging.info("Starting model deployment service...")
+
             # Run the model deployment step using MLflow
             _ = mlflow.run(
                 "components/deploy_model",
@@ -217,12 +244,12 @@ def go(config):
                     "export_model": "random_forest_export:prod",
                 },
             )
-            logging.info("Model deployment step completed successfully.")
-
+            
         except Exception as e:
             logging.error(f"Error occurred while running model deployment: {e}")
             raise
 
+    test_api_start_time = time.time()
     if "test_api" in active_steps:
         try:
             # Run some tests for fastapi running server
@@ -231,7 +258,9 @@ def go(config):
                 entry_point="main",
                 env_manager="conda",
             )
-            logging.info("API testing step completed successfully.") 
+            test_api_end_time = time.time()
+            test_api_exc_time = test_api_end_time - test_api_start_time
+            logging.info(f"API testing step completed successfully - execution time: {test_api_exc_time:.2f} sec") 
 
         except Exception as e:
             logging.error(f"Error occurred while testing API running server: {e}")
