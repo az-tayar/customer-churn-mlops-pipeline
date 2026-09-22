@@ -55,9 +55,10 @@ def go(config):
         active_steps = list(steps_par)
 
 
-    ingestion_start_time = time.time()
     if "data_ingestion" in active_steps:
         try:
+            ingestion_start_time = time.time()
+
             # Download file and load in W&B
             _ = mlflow.run(
                 "components/data_ingestion",
@@ -78,9 +79,10 @@ def go(config):
             logging.error(f"Error occurred while running data_ingestion: {e}")
             raise
 
-    preprocessing_start_time = time.time()
     if "preprocessing" in active_steps:
         try:
+            preprocessing_start_time = time.time()
+
             # Run the preprocessing step using MLflow
             _ = mlflow.run(
                 "components/preprocessing",
@@ -101,9 +103,10 @@ def go(config):
             logging.error(f"Error occurred while running preprocessing: {e}")
             raise
 
-    eda_start_time = time.time()
     if "eda" in active_steps:
         try:
+            eda_start_time = time.time()
+
             # Run the EDA step using MLflow
             _ = mlflow.run(
                 "components/eda",
@@ -123,9 +126,10 @@ def go(config):
         except Exception as e:
             logging.error(f"Error occurred while running eda: {e}")
 
-    test_data_start_time = time.time()
     if "test_data" in active_steps:
         try:
+            test_data_start_time = time.time()
+
             # Run the data testing step using MLflow
             _ = mlflow.run(
                 "components/test_data",
@@ -145,9 +149,10 @@ def go(config):
             logging.error(f"Error occurred while running data testing: {e}")
             raise
 
-    data_split_start_time = time.time()
     if "data_split" in active_steps:
         try:
+            data_split_start_time = time.time()
+
             # Run the data splitting step using MLflow
             _ = mlflow.run(
                 "components/data_split",
@@ -168,9 +173,10 @@ def go(config):
             logging.error(f"Error occurred while running data splitting: {e}")
             raise
 
-    train_start_time = time.time()
     if "train_model" in active_steps:
         try:
+            train_start_time = time.time()
+
             # Run the model training step using MLflow
             _ = mlflow.run(
                 "components/train_model",
@@ -191,9 +197,10 @@ def go(config):
             logging.error(f"Error occurred while running model training: {e}")
             raise
 
-    eval_model_start_time = time.time()
     if "eval_model" in active_steps:
         try:
+            eval_model_start_time = time.time()
+
             # Run the model evaluating step using MLflow
             _ = mlflow.run(
                 "components/eval_model",
@@ -212,9 +219,10 @@ def go(config):
             logging.error(f"Error occurred while running model testing: {e}")
             raise
 
-    test_model_start_time = time.time()
     if "test_model" in active_steps:
         try:
+            test_model_start_time = time.time()
+
             # Run the model testing step using MLflow
             _ = mlflow.run(
                 "components/test_model",
@@ -249,9 +257,10 @@ def go(config):
             logging.error(f"Error occurred while running model deployment: {e}")
             raise
 
-    test_api_start_time = time.time()
     if "test_api" in active_steps:
         try:
+            test_api_start_time = time.time()
+
             # Run some tests for fastapi running server
             _ = mlflow.run(
                 "components/test_api",

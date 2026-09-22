@@ -1,4 +1,4 @@
-name: nyc_airbnb
+name: CustomerChurnAI
 conda_env: conda.yml
 
 entry_points:
