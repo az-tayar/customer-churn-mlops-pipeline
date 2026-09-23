@@ -34,7 +34,6 @@ def test_row_count(data):
         data: Input dataset to validate.
     """
     n_rows = data.shape[0]
-
     assert 8000 < n_rows < 15000
 
 
