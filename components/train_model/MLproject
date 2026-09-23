@@ -9,26 +9,10 @@ entry_points:
         description: Train dataset
         type: string
 
-      val_size:
-        description: Size of the validation split. Fraction of the dataset, or number of items
-        type: string
-
-      random_seed:
-        description: Seed for the random number generator. Use this for reproducibility
-        type: string
-        default: 42
-
-      stratify_by:
-        description: Column to use for stratification (if any)
-        type: string
-        default: 'none'
-
       output_artifact:
         description: Name for the output artifact
         type: string
 
     command: >-
       python run.py --trainval_artifact {trainval_artifact} \
-                    --val_size {val_size} \
-                    --random_seed {random_seed} \
                     --output_artifact {output_artifact}

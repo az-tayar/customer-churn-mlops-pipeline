@@ -45,8 +45,8 @@ def go(args):
     y_test = df["Churn"]
 
     logger.info("Loading model and performing inference on test set")
-    sk_pipe = mlflow.sklearn.load_model(model_local_path)
-    y_pred = sk_pipe.predict(X_test)
+    model = mlflow.sklearn.load_model(model_local_path)
+    y_pred = model.predict(X_test)
 
     logger.info("Calculating metrics")
     accuracy = accuracy_score(y_test, y_pred)

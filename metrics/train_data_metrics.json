@@ -1,0 +1,11 @@
+{
+    "best_params": {
+        "model__criterion": "entropy",
+        "model__max_depth": 20,
+        "model__max_features": 0.5,
+        "model__min_samples_leaf": 1,
+        "model__min_samples_split": 2,
+        "model__n_estimators": 200
+    },
+    "best_cv_f1": 0.8823337718700998
+}

@@ -28,17 +28,17 @@ def run_component(name, path, parameters=None, critical=True):
             env_manager="conda",
             parameters=parameters
         )
-        execution_time = time.perf_counter() - start_time
+        execution_time = (time.perf_counter() - start_time) / 60
         logging.info(
             f"{name} completed successfully - "
-            f"execution time: {execution_time:.2f} sec"
+            f"execution time: {execution_time:.2f} mins"
         )
         return result
 
     except Exception:
-        execution_time = time.perf_counter() - start_time
+        execution_time = (time.perf_counter() - start_time) / 60
         logging.exception(
-            f"{name} failed after {execution_time:.2f} sec"
+            f"{name} failed after {execution_time:.2f} mins"
         )
         if critical:
             raise
@@ -176,10 +176,6 @@ def go(config):
             parameters={
                 "trainval_artifact":
                     "trainval_data.csv:latest",
-                "val_size":
-                    config["modeling"]["val_size"],
-                "random_seed":
-                    config["modeling"]["random_seed"],
                 "output_artifact":
                     "random_forest_export"
             }
