@@ -4,6 +4,8 @@ import argparse
 
 import ydata_profiling
 
+VIS_DIR = "../../results/visualizations"
+VIS_NAME = "eda_report.html"
 
 def go(args):
     """
@@ -22,15 +24,8 @@ def go(args):
     local_path = wandb.use_artifact(args.input_artifact).file()
     df = pd.read_csv(local_path)
 
-    # Generate EDA report
-    print(f'The 1st 5 rows of the dataset: \n{df.head()}')
-    print(f'\nInfo for the dataset: \n{df.info()}')
-    print(f'\nDescriptive statistics for the dataset: \n{df.describe()}')
-    print(f'\nMissing values for the dataset: \n{df.isnull().sum()}')
-    print(f'\nData types for the dataset: \n{df.dtypes}')
-
     profile = ydata_profiling.ProfileReport(df)
-    profile.to_file("../../visualizations/eda_report.html")
+    profile.to_file(f"{VIS_DIR}/{VIS_NAME}")
 
 
 if __name__ == "__main__":

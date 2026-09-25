@@ -2,13 +2,8 @@
 Download from W&B the raw dataset and apply some basic data cleaning, exporting the result to a new artifact
 """
 import argparse
-import logging
 import pandas as pd
 import wandb
-import os
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)-15s %(message)s")
-logger = logging.getLogger()
 
 cat_columns = [
     'Gender',
@@ -17,6 +12,8 @@ cat_columns = [
     'Income_Category',
     'Card_Category'
 ]
+
+DATA_DIR = "../../results/data"
 
 def go(args):
     """
@@ -54,17 +51,15 @@ def go(args):
             df.groupby(cat_col)['Churn'].mean()
         )
   
-    logger.info("Cleaned data has %s rows and %s columns", *df.shape)
-
     # Save cleaned data
-    df.to_csv(os.path.join("../../data", args.output_artifact), index=False)
+    df.to_csv(f'{DATA_DIR}/{args.output_artifact}', index=False)
 
     artifact = wandb.Artifact(
         name=args.output_artifact,
         type=args.output_type,
         description=args.output_description,
     )
-    artifact.add_file(os.path.join("../../data", args.output_artifact))
+    artifact.add_file(f'{DATA_DIR}/{args.output_artifact}')
     run.log_artifact(artifact)
 
     artifact.wait()

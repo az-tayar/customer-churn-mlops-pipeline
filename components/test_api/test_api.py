@@ -12,7 +12,6 @@ The FastAPI server must be running before executing these tests.
 import pandas as pd
 from pathlib import Path
 from argparse import Namespace
-import mlflow
 import sys
 
 test_path = Path(__file__).resolve().parents[1] / "deploy_model"
@@ -29,6 +28,9 @@ cat_columns = [
     "Income_Category",
     "Card_Category"
 ]
+
+DATA_DIR = '../../results/data'
+TRAINVAL_DATA_FILE = 'trainval_data.csv'
 
 # initiating the client server
 args = Namespace(export_model="random_forest_export:prod")
@@ -68,7 +70,7 @@ def test_predict_churn_0():
 
     The returned prediction is expected to be 0.
     """
-    df = pd.read_csv("../../data/trainval_data.csv")
+    df = pd.read_csv(f'{DATA_DIR}/{TRAINVAL_DATA_FILE}')
 
     df.drop(columns=cat_columns, inplace=True)
 
@@ -98,7 +100,7 @@ def test_predict_churn_1():
 
     The returned prediction is expected to be 1.
     """
-    df = pd.read_csv("../../data/trainval_data.csv")
+    df = pd.read_csv(f'{DATA_DIR}/{TRAINVAL_DATA_FILE}')
 
     df.drop(columns=cat_columns, inplace=True)
 

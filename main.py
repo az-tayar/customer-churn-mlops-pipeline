@@ -15,6 +15,8 @@ steps = [
     "test_model"
     ]
 
+LOGS_DIR = "./results/logs"
+LOGS_FILE = "pipeline.log"
 
 def run_component(name, path, parameters=None, critical=True):
     """Run an MLflow component with timing and error logging."""
@@ -57,12 +59,9 @@ def go(config):
             pipeline steps, ETL parameters, data checks, and modeling parameters.
     """
     # Set up logging
-    LOGS_DIR = "./logs"
-    LOG_FILE = os.path.join(LOGS_DIR, "pipeline.log")
     os.makedirs(LOGS_DIR, exist_ok=True)
-
     logging.basicConfig(
-        filename=LOG_FILE,
+        filename=f'{LOGS_DIR}/{LOGS_FILE}',
         level=logging.INFO,
         format="%(asctime)s - %(levelname)s - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
@@ -174,10 +173,8 @@ def go(config):
             name="Model training",
             path="components/train_model",
             parameters={
-                "trainval_artifact":
-                    "trainval_data.csv:latest",
-                "output_artifact":
-                    "random_forest_export"
+                "trainval_artifact": "trainval_data.csv:latest",
+                "output_artifact": "random_forest_export"
             }
         )
 
@@ -189,10 +186,8 @@ def go(config):
             name="Model evaluation",
             path="components/eval_model",
             parameters={
-                "mlflow_model":
-                    "random_forest_export:prod",
-                "test_dataset":
-                    "test_data.csv:latest"
+                "mlflow_model": "random_forest_export:prod",
+                "test_dataset": "test_data.csv:latest"
             }
         )
 
@@ -222,12 +217,9 @@ def go(config):
             name="Model deployment",
             path="components/deploy_model",
             parameters={
-                "ip_address":
-                    config["main"]["ip_address"],
-                "port":
-                    config["main"]["port"],
-                "export_model":
-                    "random_forest_export:prod"
+                "ip_address": config["main"]["ip_address"],
+                "port": config["main"]["port"],
+                "export_model": "random_forest_export:prod"
             }
         )
 

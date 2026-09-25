@@ -2,14 +2,11 @@
 This script splits the provided dataframe in test and remainder
 """
 import argparse
-import logging
 import pandas as pd
 import wandb
-import os
 from sklearn.model_selection import train_test_split
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)-15s %(message)s")
-logger = logging.getLogger()
+DATA_DIR = "../../results/data"
 
 def go(args):
     """
@@ -24,12 +21,10 @@ def go(args):
     run.config.update(args)
 
     # Download input artifact
-    logger.info(f"Fetching artifact {args.input}")
     artifact_local_path = run.use_artifact(args.input).file()
 
     df = pd.read_csv(artifact_local_path)
 
-    logger.info("Splitting trainval and test")
     trainval, test = train_test_split(
         df,
         test_size=args.test_size,
@@ -39,13 +34,9 @@ def go(args):
 
     # Save to output files
     for split_df, key in zip([trainval, test], ['trainval', 'test']):
-        logger.info(f"Uploading {key}_data.csv dataset")
 
-        split_df.to_csv(
-            os.path.join(
-                "../../data",
-                f'{key}_data.csv'),
-            index=False)
+        file_name = f'{key}_data.csv'
+        split_df.to_csv(f'{DATA_DIR}/{file_name}', index=False)
 
         # Log to W&B
         artifact = wandb.Artifact(
@@ -53,7 +44,7 @@ def go(args):
             type=f"{key}_data",
             description=f"{key} split of dataset",
         )
-        artifact.add_file(os.path.join("../../data", f'{key}_data.csv'))
+        artifact.add_file(f'{DATA_DIR}/{file_name}')
         run.log_artifact(artifact)
 
         # Wait for the artifact to be logged before proceeding

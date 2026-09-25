@@ -7,8 +7,7 @@ from pathlib import Path
 
 METRICS_PATH = (
     Path(__file__).resolve().parents[2]
-    / "metrics"
-    / "test_data_metrics.json"
+    / "results" / "metrics" / "test_data_metrics.json"
 )
 
 def test_metrics_file_exists():

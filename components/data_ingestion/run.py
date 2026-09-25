@@ -2,13 +2,9 @@
 This script download a URL to a local destination
 """
 import argparse
-import logging
-import os
 import wandb
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)-15s %(message)s")
-logger = logging.getLogger()
-
+DATA_DIR = '../../results/data'
 
 def go(args):
     """
@@ -22,16 +18,13 @@ def go(args):
     run = wandb.init(job_type="data_ingestion")
     run.config.update(args)
 
-    logger.info(f"Returning sample {args.sample}")
-    logger.info(f"Uploading {args.artifact_name} to Weights & Biases")
-
     # Log to W&B
     artifact = wandb.Artifact(
         args.artifact_name,
         type=args.artifact_type,
         description=args.artifact_description,
     )
-    artifact.add_file(os.path.join("../../data", args.sample))
+    artifact.add_file(f'{DATA_DIR}/{args.sample}')
     run.log_artifact(artifact)
 
     # Wait for the artifact to be logged before proceeding
