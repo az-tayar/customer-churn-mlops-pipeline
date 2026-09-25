@@ -206,7 +206,16 @@ def go(config):
         )
 
     # --------------------------------------------------
-    # 9. MODEL DEPLOYMENT
+    # 9. API TESTING
+    # --------------------------------------------------
+    if "test_api" in active_steps:
+        run_component(
+            name="API testing",
+            path="components/test_api"
+        )
+
+    # --------------------------------------------------
+    # 10. MODEL DEPLOYMENT
     # --------------------------------------------------
     if "deploy_model" in active_steps:
         run_component(
@@ -220,15 +229,6 @@ def go(config):
                 "export_model":
                     "random_forest_export:prod"
             }
-        )
-
-    # --------------------------------------------------
-    # 10. API TESTING
-    # --------------------------------------------------
-    if "test_api" in active_steps:
-        run_component(
-            name="API testing",
-            path="components/test_api"
         )
 
 
