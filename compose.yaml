@@ -1,0 +1,21 @@
+services:
+
+  pipeline:
+    build: .
+    image: customer-churn-ai
+    env_file:
+      - .env
+    volumes:
+      - ./results:/app/results
+    # no command needed -> use the default CMD in dockerfile
+
+  api:
+    build: .
+    image: customer-churn-ai
+    env_file:
+      - .env
+    volumes:
+      - ./results:/app/results
+    ports: 
+      - "8000:8000"
+    command: mlflow run . -P steps=["test_api","deploy_model"] --env-manager=local
