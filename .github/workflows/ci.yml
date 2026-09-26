@@ -71,7 +71,7 @@ jobs:
         env:
           WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
         run: |
-          mlflow run . -P steps="'test_data'"
+          mlflow run . -P steps=test_data
 
       # --------------------------------------------------
       # 7. Model performance tests
@@ -81,7 +81,7 @@ jobs:
         env:
           WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
         run: |
-          mlflow run . -P steps="'test_model'"
+          mlflow run . -P steps=test_model
 
       # --------------------------------------------------
       # 8. FastAPI tests
@@ -91,4 +91,4 @@ jobs:
         env:
           WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
         run: |
-          mlflow run . -P steps="'test_api'"
+          mlflow run . -P steps=test_api

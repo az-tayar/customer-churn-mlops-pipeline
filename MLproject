@@ -10,4 +10,4 @@ entry_points:
         type: str
         default: all
 
-    command: "python main.py main.steps='{steps}'
+    command: "python main.py main.steps='{steps}'"
