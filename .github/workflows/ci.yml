@@ -13,26 +13,23 @@ jobs:
   ci:
     runs-on: ubuntu-latest
 
+    env:
+      WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
+
     steps:
 
-      # --------------------------------------------------
-      # 1. Checkout repository
-      # --------------------------------------------------
+      # 1. Checkout
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # --------------------------------------------------
-      # 2. Set up Miniconda
-      # --------------------------------------------------
+      # 2. Miniconda
       - name: Set up Miniconda
         uses: conda-incubator/setup-miniconda@v3
         with:
           python-version: "3.13"
           auto-activate-base: true
 
-      # --------------------------------------------------
-      # 3. Install CI dependencies
-      # --------------------------------------------------
+      # 3. CI dependencies
       - name: Install CI dependencies
         shell: bash -el {0}
         run: |
@@ -41,19 +38,17 @@ jobs:
           pip install flake8
           pip install wandb==0.21.3
 
-      # --------------------------------------------------
-      # 4. Configure W&B
-      # --------------------------------------------------
+      # 4. W&B authentication
       - name: Configure W&B
         shell: bash -el {0}
-        env:
-          WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
         run: |
-          wandb login "$WANDB_API_KEY"
+          if [ -z "$WANDB_API_KEY" ]; then
+            echo "WANDB_API_KEY is not available"
+            exit 1
+          fi
+          wandb login --verify "$WANDB_API_KEY"
 
-      # --------------------------------------------------
-      # 5. Flake8
-      # --------------------------------------------------
+      # 5. Lint
       - name: Run Flake8
         shell: bash -el {0}
         run: |
@@ -63,32 +58,20 @@ jobs:
             --show-source \
             --statistics
 
-      # --------------------------------------------------
       # 6. Data tests
-      # --------------------------------------------------
       - name: Run data tests
         shell: bash -el {0}
-        env:
-          WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
         run: |
-          mlflow run . -P steps=test_data
+          mlflow run . -P steps="'test_data'"
 
-      # --------------------------------------------------
-      # 7. Model performance tests
-      # --------------------------------------------------
+      # 7. Model tests
       - name: Run model tests
         shell: bash -el {0}
-        env:
-          WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
         run: |
-          mlflow run . -P steps=test_model
+          mlflow run . -P steps="'test_model'"
 
-      # --------------------------------------------------
-      # 8. FastAPI tests
-      # --------------------------------------------------
+      # 8. API tests
       - name: Run API tests
         shell: bash -el {0}
-        env:
-          WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
         run: |
-          mlflow run . -P steps=test_api
+          mlflow run . -P steps="'test_api'"
