@@ -110,3 +110,7 @@ mlruns/
 outputs/
 random_forest_dir/
 multirun/
+
+.vscode/
+cookie-mlflow-step/
+
