@@ -1,3 +1,10 @@
+"""
+Streamlit frontend for the Customer Churn Prediction application.
+
+Loads customer test data, sends customer features to the FastAPI backend,
+and displays the churn prediction and probability.
+"""
+
 import pandas as pd
 import argparse
 import streamlit as st

@@ -12,6 +12,7 @@ The repository is designed to:
 - evaluate model quality with standard metrics
 - test the model against acceptance thresholds
 - deploy the trained model as an API for real-time predictions
+- provide a Streamlit web application for interactive customer churn predictions
 
 ## Project overview
 
@@ -28,7 +29,8 @@ This is the orchestrator for the end-to-end pipeline. It defines a list of pipel
 This file stores the project configuration, including:
 - project name and experiment name
 - pipeline step selection
-- API host and port
+- API host, URL, and port
+- Streamlit frontend port
 - data validation threshold
 - train/test split settings
 - Random Forest hyperparameter grid
@@ -118,6 +120,16 @@ Location: `components/deploy_model/`
 - deploys it behind a FastAPI server
 - exposes a prediction endpoint for inference
 
+### 11) Streamlit web application
+Location: `components/streamlit_ui/`
+
+- loads the test-data and exported-model artifacts from W&B
+- provides an interactive web interface for selecting a customer
+- sends the selected customer's features to the deployed FastAPI service
+- displays the churn prediction, churn probability, and actual test value
+
+This stage runs after model deployment when the pipeline is executed with `steps=all`. It can also be run independently with `steps=streamlit_ui`, provided the API service is already available.
+
 ## Project configuration
 
 The project uses Hydra configuration via `config.yaml`.
@@ -129,8 +141,10 @@ main:
   project_name: CustomerChurnAI
   experiment_name: development
   steps: all
-  ip_address: 0.0.0.0
-  port: 8000
+  host: 0.0.0.0
+  api_url: http://backend:8000
+  api_port: 8000
+  streamlit_port: 8501
 
 etl:
   sample: "dataset.csv"
@@ -210,10 +224,25 @@ This runs the pipeline and removes the service container when it finishes. Outpu
 ### Start the API service
 
 ```bash
-docker compose up -d api
+docker compose up -d backend
 ```
 
 This starts the API service in the background, available at `http://localhost:8000` once startup completes. The configured model artifact must be accessible from W&B.
+
+### Start the frontend web application
+
+The Streamlit frontend uses the test-data artifact to let you select a customer and sends that customer's features to the FastAPI backend for prediction. Start the backend and frontend together:
+
+```bash
+docker compose up --build backend frontend
+```
+
+Open `http://localhost:8501` in a browser after the services start. The frontend expects the W&B artifacts configured by the pipeline:
+
+- `test_data.csv:latest` for the customer records
+- `random_forest_export:prod` for the exported model
+
+The frontend reads the backend URL from `config.yaml`. When running with Docker Compose, the configured URL is `http://backend:8000`, which allows the frontend container to reach the backend service by its Compose service name.
 
 ## Running the pipeline
 
@@ -280,13 +309,39 @@ Once running, the app exposes:
 
 ```json
 {
-  "prediction": "0"
+  "prediction": 0,
+  "churn_probability": 0.12
 }
 ```
 
-The API returns a string prediction where:
+The API returns a numeric prediction and the estimated probability of churn where:
 - `0` = customer is not likely to churn
 - `1` = customer is likely to churn
+- `churn_probability` is a value between `0` and `1`
+
+## Streamlit web application
+
+The interactive frontend is implemented in [`components/streamlit_ui/web_app.py`](components/streamlit_ui/web_app.py). It displays customer details from the test-data artifact and, when **Analyze Customer** is selected, shows:
+
+- the predicted churn class
+- the churn probability
+- the actual churn value from the selected test record
+
+### Run the frontend through MLflow
+
+Start the API in one terminal:
+
+```bash
+mlflow run . -P steps=deploy_model
+```
+
+In a second terminal, start the Streamlit component:
+
+```bash
+mlflow run . -P steps=streamlit_ui
+```
+
+The default Streamlit port is `8501`. If running outside Docker Compose, update `main.api_url` in `config.yaml` to the address where the FastAPI service is reachable (for example, `http://localhost:8000`).
 
 ## Validation and testing
 
@@ -354,65 +409,6 @@ MLflow is used for:
 - scalable experiment management
 - loading and serving deployed models
 
-## Typical workflow
-
-A normal development cycle for this repository looks like this:
-
-1. update or add data processing logic
-2. run the relevant pipeline steps
-3. inspect W&B runs and metrics
-4. validate model quality
-5. iterate on preprocessing or tuning if needed
-6. deploy the best model
-7. test the API endpoint
-
-## Troubleshooting
-
-### W&B login issues
-If W&B requests fail, run:
-
-```bash
-wandb login
-```
-
-and confirm your account permissions and project access.
-
-### Missing environment dependencies
-If commands fail due to missing packages, recreate the environment:
-
-```bash
-conda env create -f conda.yml
-conda activate components
-```
-
-### Pipeline step failures
-Check the logs in:
-
-```text
-results/logs/pipeline.log
-```
-
-The `main.py` script writes pipeline execution logs there.
-
-### FastAPI not starting
-Make sure the model artifact exists and is accessible from W&B. Check that the `--export_model` flag points to a valid MLflow model artifact, such as:
-
-```bash
-random_forest_export:prod
-```
-
-## Notes on the dataset and modeling
-
-The dataset is structured for supervised binary classification and includes both numeric features and engineered categorical churn statistics. The feature engineering step creates columns such as:
-
-- `Gender_Churn`
-- `Education_Level_Churn`
-- `Marital_Status_Churn`
-- `Income_Category_Churn`
-- `Card_Category_Churn`
-
-These derived features encode the historical average churn rate for each category, which helps the model learn patterns from customer segments.
-
 ## Summary
 
 This repository is a complete example of an MLOps-style customer churn prediction pipeline. It covers:
@@ -421,6 +417,7 @@ This repository is a complete example of an MLOps-style customer churn predictio
 - model validation and testing
 - experiment tracking with W&B and MLflow
 - deployment as a FastAPI service
+- interactive customer churn dashboard using Streamlit
 - automated checks for model quality and API health
 
 It is suitable for learning, experimentation, and real-world project demonstrations in ML engineering and MLOps workflows.
