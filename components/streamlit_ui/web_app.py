@@ -12,13 +12,15 @@ import wandb
 import mlflow
 import yaml
 import requests
+import os
 
 cat_columns = ['Gender', 'Education_Level', 'Marital_Status',
                'Income_Category', 'Card_Category']
 
 CONFIG_FILE = '../../config.yaml'
 with open(CONFIG_FILE) as f:
-    api_url = yaml.safe_load(f)['main']['api_url']
+    config = yaml.safe_load(f)['main']
+    api_url = os.getenv("API_URL", config['api_url'])
 
 
 def go(args):
