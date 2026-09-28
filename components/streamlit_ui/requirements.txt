@@ -1,0 +1,4 @@
+mlflow==3.3.2
+wandb>=0.22,<0.23
+streamlit
+scikit-learn==1.7.2
