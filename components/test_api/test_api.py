@@ -86,7 +86,7 @@ def test_predict_churn_0():
     )
 
     assert response.status_code == 200
-    assert response.json()["prediction"] == "0"
+    assert response.json()["prediction"] == 0
 
 
 def test_predict_churn_1():
@@ -116,4 +116,4 @@ def test_predict_churn_1():
     )
 
     assert response.status_code == 200
-    assert response.json()["prediction"] == "1"
+    assert response.json()["prediction"] == 1

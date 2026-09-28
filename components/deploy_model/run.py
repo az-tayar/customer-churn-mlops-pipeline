@@ -20,8 +20,8 @@ class PredictionRequest(BaseModel):
     """
     Define the response schema for a churn prediction.
     """
-    prediction: str
-
+    prediction: int
+    churn_probability: float
 
 class InputData(BaseModel):
     """
@@ -80,6 +80,7 @@ def create_app(args):
         """
         return {"message": "Welcome to the Customer Churn Predictor API. Use the /predict endpoint to get churn predictions."}
 
+
     @app.post("/predict", response_model=PredictionRequest)
     async def predict_churn(input_data: InputData):
         """
@@ -92,9 +93,11 @@ def create_app(args):
         input_dict = input_data.model_dump()
         input_df = pd.DataFrame([input_dict])
 
-        pred = model.predict(input_df)
+        prediction = model.predict(input_df)[0]
+        probability = model.predict_proba(input_df)[0][1]
 
-        return {"prediction": str(pred[0])}
+
+        return {"prediction": int(prediction), "churn_probability": float(probability)}
 
     return app
 
@@ -104,13 +107,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Run the FastAPI server for the Customer Churn Predictor.")
 
-    parser.add_argument("--ip_address",
+    parser.add_argument("--host",
                         type=str,
                         help="the IP address for deploying the prod model",
                         required=True,
                         )
 
-    parser.add_argument("--port",
+    parser.add_argument("--api_port",
                         type=int,
                         help="The port number for listening to the FastAPI server",
                         required=True,
@@ -126,4 +129,4 @@ if __name__ == "__main__":
 
     # Create the app
     app = create_app(args)
-    uvicorn.run(app, host=args.ip_address, port=args.port)
+    uvicorn.run(app, host=args.host, port=args.api_port)

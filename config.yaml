@@ -2,8 +2,10 @@ main:
   project_name: CustomerChurnAI 
   experiment_name: development
   steps: all
-  ip_address: 0.0.0.0
-  port: 8000
+  host: 0.0.0.0
+  api_url: http://backend:8000
+  api_port: 8000
+  streamlit_port: 8501
 etl:
   sample: "dataset.csv"
 data_check:

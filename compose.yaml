@@ -9,7 +9,7 @@ services:
       - ./results:/app/results
     # no command needed -> use the default CMD in dockerfile
 
-  api:
+  backend:
     build: .
     image: customer-churn-ai
     env_file:
@@ -19,3 +19,14 @@ services:
     ports: 
       - "8000:8000"
     command: mlflow run . -P steps=["test_api","deploy_model"] --env-manager=local
+
+  frontend:
+    build: .
+    image: customer-churn-ai
+    env_file:
+      - .env
+    volumes:
+      - ./results:/app/results
+    ports: 
+      - "8501:8501"
+    command: mlflow run . -P steps=streamlit_ui --env-manager=local

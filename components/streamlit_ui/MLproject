@@ -1,0 +1,15 @@
+name: streamlit_ui
+conda_env: conda.yml
+
+entry_points:
+  main:
+    parameters:
+      test_artifact:
+        description: this is the test artifact for customer selection
+        type: str
+      
+      export_model:
+        description: this is the export model to be used in the web app
+        type: str  
+
+    command: streamlit run web_app.py -- --test_artifact {test_artifact} --export_model {export_model}

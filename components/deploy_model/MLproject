@@ -4,11 +4,11 @@ conda_env: conda.yml
 entry_points:
   main:
     parameters:
-      ip_address:
+      host:
         description: The IP address for deploying the prod model
         type: str
 
-      port:
+      api_port:
         description: The port number for listening to the FastAPI server
         type: int
 
@@ -16,4 +16,4 @@ entry_points:
         description: Exported model artifact for deployment
         type: str
 
-    command: python run.py --ip_address {ip_address} --port {port} --export_model {export_model}
+    command: python run.py --host {host} --api_port {api_port} --export_model {export_model}

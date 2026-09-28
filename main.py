@@ -217,12 +217,24 @@ def go(config):
             name="Model deployment",
             path="components/deploy_model",
             parameters={
-                "ip_address": config["main"]["ip_address"],
-                "port": config["main"]["port"],
+                "host": config["main"]["host"],
+                "api_port": config["main"]["api_port"],
                 "export_model": "random_forest_export:prod"
             }
         )
 
+    # --------------------------------------------------
+    # 11. STREAMLIT UI
+    # --------------------------------------------------
+    if "streamlit_ui" in active_steps:
+        run_component(
+            name="Streamlit UI",
+            path="components/streamlit_ui",
+            parameters={
+                "test_artifact": "test_data.csv:latest",
+                "export_model": "random_forest_export:prod"
+            }
+        )
 
 if __name__ == "__main__":
     go()
